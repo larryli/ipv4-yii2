@@ -13,7 +13,7 @@ composer require larryli/ipv4-yii2
 可以在 ```config``` 文件先定义一个别名：
 
 ```php
-Yii::setAlias('@ipv4', (dirname(__DIR__) . '/vendor/larryli/ipv4');
+Yii::setAlias('@ipv4-yii2', dirname(__DIR__) . '/vendor/larryli/ipv4-yii2');
 ```
 
 ### 组件
@@ -45,7 +45,7 @@ Yii::setAlias('@ipv4', (dirname(__DIR__) . '/vendor/larryli/ipv4');
 * ```runtime``` 如果为空，表示使用 ipv4 自己的 ```runtime```；
 * ```database``` 指向特定的 ```Database``` 类，为空表示使用 ipv4 默认的 Medoo，建议使用 ```larryli\ipv4\yii2\Database``` 集成使用 yii2 的数据库配置；
 * ```prefix``` 为数据库表前缀，默认为 ```ipv4_```，仅在 ```database``` 为 ```larryli\ipv4\yii2\Database``` 有效；
-* ```providers``` 配置可用的 ```larryli\ipv4\query\Query``` 和其生成规则；
+* ```providers``` 配置可用的 ```larryli\ipv4\Query``` 和其生成规则；
 
 ### 命令
 
@@ -119,7 +119,7 @@ Yii::$app->get('ipv4')->get('full')->find(ip2long('127.0.0.1'));
 
 ### 使用模型
 
-仅支持生成的数据库 ```larryli\ipv4\query\DatabaseQuery``` 查询。
+仅支持生成的数据库 ```larryli\ipv4\DatabaseQuery``` 查询。
 
 使用 yii2 模型可以不需要配置 ipv4 组件，但必须先使用 ipv4 组件生成好相关数据库。
 
