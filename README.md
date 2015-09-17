@@ -29,11 +29,11 @@ Yii::setAlias('@ipv4-yii2', dirname(__DIR__) . '/vendor/larryli/ipv4-yii2');
     // 'prefix' => 'ipv4_',
     'providers' => [
         'monipdb' => [
-            // 'class' => '\larryli\ipv4\MonIPDBQuery',
+            // 'class' => '\larryli\ipv4\MonipdbQuery',
             'filename' => '@runtime/17monipdb.dat',
         ],
         'qqwry' => [
-            // 'class' => '\larryli\ipv4\QQWryQuery',
+            // 'class' => '\larryli\ipv4\QqwryQuery',
             'filename' => '@runtime/qqwry.dat',
         ],
         'full' => [
@@ -53,7 +53,7 @@ Yii::setAlias('@ipv4-yii2', dirname(__DIR__) . '/vendor/larryli/ipv4-yii2');
             'providers' => 'full',
         ],
         'freeipip' => [
-            // 'class' => '\larryli\ipv4\FreeIPIPQuery',
+            // 'class' => '\larryli\ipv4\FreeipipQuery',
         ],
         // 'taobao' => [
             // 'class' => '\larryli\ipv4\TaobaoQuery',
@@ -62,7 +62,7 @@ Yii::setAlias('@ipv4-yii2', dirname(__DIR__) . '/vendor/larryli/ipv4-yii2');
             // 'class' => '\larryli\ipv4\SinaQuery',
         // ],
         // 'BaiduMap' => [
-            // 'class' => '\larryli\ipv4\BaiduMapQuery',
+            // 'class' => '\larryli\ipv4\BaidumapQuery',
         // ],
     ],
 ],
