@@ -23,18 +23,47 @@ Yii::setAlias('@ipv4-yii2', dirname(__DIR__) . '/vendor/larryli/ipv4-yii2');
 ```php
 // ipv4 component
 'ipv4' => [
-    'class' => 'larryli\ipv4\yii2\IPv4',
-    'runtime' => '@runtime',
-    'database' => 'larryli\ipv4\yii2\Database',
-    // query config
+    'class' => '\larryli\ipv4\yii2\IPv4',
+    // 'db' => 'db',
+    // 'database' => '\larryli\ipv4\yii2\Database',
+    // 'prefix' => 'ipv4_',
     'providers' => [
-        'monipdb',    // empty
-        'qqwry',
-        'full' => ['monipdb', 'qqwry'], // ex. 'monipdb', 'qqwry', ['qqwry', 'monipdb']
-        'mini' => 'full',   // ex. ['monipdb', 'qqwry'], 'monipdb', 'qqwry', ['qqwry', 'monipdb']
-        'china' => 'full',
-        'world' => 'full',
-        'freeipip',
+        'monipdb' => [
+            // 'class' => '\larryli\ipv4\MonIPDBQuery',
+            'filename' => '@runtime/17monipdb.dat',
+        ],
+        'qqwry' => [
+            // 'class' => '\larryli\ipv4\QQWryQuery',
+            'filename' => '@runtime/qqwry.dat',
+        ],
+        'full' => [
+            // 'class' => '\larryli\ipv4\FullQuery',
+            'providers' => ['monipdb', 'qqwry'], // ex. 'monipdb', 'qqwry', ['qqwry', 'monipdb']
+        ],
+        'mini' => [
+            // 'class' => '\larryli\ipv4\MiniQuery',
+            'providers' => 'full',   // ex. ['monipdb', 'qqwry'], 'monipdb', 'qqwry', ['qqwry', 'monipdb']
+        ],
+        'china' => [
+            // 'class' => '\larryli\ipv4\MiniQuery',
+            'providers' => 'full',
+        ],
+        'world' => [
+            // 'class' => '\larryli\ipv4\MiniQuery',
+            'providers' => 'full',
+        ],
+        'freeipip' => [
+            // 'class' => '\larryli\ipv4\FreeIPIPQuery',
+        ],
+        // 'taobao' => [
+            // 'class' => '\larryli\ipv4\TaobaoQuery',
+        // ],
+        // 'sina' => [
+            // 'class' => '\larryli\ipv4\SinaQuery',
+        // ],
+        // 'BaiduMap' => [
+            // 'class' => '\larryli\ipv4\BaiduMapQuery',
+        // ],
     ],
 ],
 ```
@@ -42,10 +71,13 @@ Yii::setAlias('@ipv4-yii2', dirname(__DIR__) . '/vendor/larryli/ipv4-yii2');
 其中：
 
 * ```class``` 指向组件自身；
-* ```runtime``` 如果为空，表示使用 ipv4 自己的 ```runtime```；
-* ```database``` 指向特定的 ```Database``` 类，为空表示使用 ipv4 默认的 Medoo，建议使用 ```larryli\ipv4\yii2\Database``` 集成使用 yii2 的数据库配置；
-* ```prefix``` 为数据库表前缀，默认为 ```ipv4_```，仅在 ```database``` 为 ```larryli\ipv4\yii2\Database``` 有效；
-* ```providers``` 配置可用的 ```larryli\ipv4\Query``` 和其生成规则；
+* ```db``` 可用的 yii2 数据库连接，默认为 ```Yii::$app->db```；
+* ```database``` 指向特定的 ```Database``` 类，默认使用 ```\larryli\ipv4\yii2\Database```；
+* ```prefix``` 为数据库表前缀，默认为 ```ipv4_```；
+* ```providers``` 配置可用的 ```\larryli\ipv4\Query``` 数据源；
+    * ```class``` 数据源可以指定具体的类；
+    * ```filename``` ，对于 ```\larryli\ipv4\FileQuery``` 需指定文件路径，其内容可以用别名，如 ```@runtime/foo.dat```；
+    * ```providers``` 数据源的数据源，```\larryli\ipv4\DatabaseQuery``` 需要，可以为一个或两个；
 
 ### 命令
 
@@ -114,7 +146,13 @@ cp vendor/larryli/ipv4/src/yii2/migrations/*.php migrations/
 
 ```php
 use Yii;
-Yii::$app->get('ipv4')->get('full')->find(ip2long('127.0.0.1'));
+Yii::$app->get('ipv4')->getQuery('full')->find(ip2long('127.0.0.1'));
+Yii::$app->get('ipv4')->__get('full')->find(ip2long('127.0.0.1'));
+Yii::$app->ipv4->full->find(ip2long('127.0.0.1'));
+
+foreach (Yii::$app->ipv4->getQueries() as $query) {
+    $query->find(ip2long('127.0.0.1'));
+}
 ```
 
 ### 使用模型
@@ -200,7 +238,6 @@ if (!empty($model) && !empty(!$model->division)) {
 ## 相关包
 
 * 核心 [larryli/ipv4](https://github.com/larryli/ipv4)
-* 控制台命令 [larryli/ipv4-bin](https://github.com/larryli/ipv4-bin)
+* 控制台命令 [larryli/ipv4-console](https://github.com/larryli/ipv4-console)
 * Medoo 数据库支持 [larryli/ipv4-medoo](https://github.com/larryli/ipv4-medoo)
-* 控制台支持 [larryli/ipv4-console](https://github.com/larryli/ipv4-console)
 * Yii2 示例 [larryli/ipv4-yii2-sample](https://github.com/larryli/ipv4-yii2-sample)

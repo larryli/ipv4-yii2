@@ -42,6 +42,9 @@ class Database extends BaseDatabase
             if (isset($options['prefix'])) {
                 $this->prefix = $options['prefix'];
             }
+            if (isset($options['db']) && is_a($options['db'], Connection::className())) {
+                $this->db = $options['db'];
+            }
         }
     }
 

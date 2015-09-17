@@ -30,19 +30,19 @@ class DumpAction extends Action
         $this->stdout("dump {$type}:\n", Console::FG_GREEN);
         switch ($type) {
             case 'default':
-                foreach ($this->ipv4->providers as $name => $provider) {
-                    $this->dumpDefault($name, 'dump_' . $name . '.json');
+                foreach ($this->ipv4->getQueries() as $name => $query) {
+                    $this->dumpDefault($query, $name);
                 }
                 break;
             case 'division':
-                foreach ($this->ipv4->providers as $name => $provider) {
-                    $this->dumpDivision($name, 'dump_' . $name . '_division.json');
+                foreach ($this->ipv4->getQueries() as $name => $query) {
+                    $this->dumpDivision($query, $name);
                 }
                 break;
             case 'division_id':
-                foreach ($this->ipv4->providers as $name => $provider) {
-                    if (empty($provider)) {
-                        $this->dumpDivisionWithId($name, 'dump_' . $name . '_division_id.json');
+                foreach ($this->ipv4->getQueries() as $name => $query) {
+                    if (FileQuery::is_a($query)) {
+                        $this->dumpDivisionWithId($query, $name);
                     }
                 }
                 break;
@@ -53,13 +53,13 @@ class DumpAction extends Action
     }
 
     /**
+     * @param Query $query
      * @param string $name
-     * @param string $filename
      * @throws \Exception
      */
-    private function dumpDefault($name, $filename)
+    private function dumpDefault(Query $query, $name)
     {
-        $query = $this->ipv4->createQuery($name);
+        $filename = 'dump_' . $name . '.json';
         $result = $this->dump($query, $filename);
         if (count($result) > 0) {
             $this->write($filename, $result);
@@ -110,13 +110,13 @@ class DumpAction extends Action
     }
 
     /**
+     * @param Query $query
      * @param string $name
-     * @param string $filename
      * @throws \Exception
      */
-    private function dumpDivision($name, $filename)
+    private function dumpDivision(Query $query, $name)
     {
-        $query = $this->ipv4->createQuery($name);
+        $filename = 'dump_' . $name . '_division.json';
         $result = $this->divisions($query, $filename, 'dump_' . $name . '.json');
         if (count($result) > 0) {
             $result = array_unique(array_values($result));
@@ -156,13 +156,13 @@ class DumpAction extends Action
     }
 
     /**
+     * @param Query $query
      * @param string $name
-     * @param string $filename
      * @throws \Exception
      */
-    private function dumpDivisionWithId($name, $filename)
+    private function dumpDivisionWithId(Query $query, $name)
     {
-        $query = $this->ipv4->createQuery($name);
+        $filename = 'dump_' . $name . '_division_id.json';
         $json_filename = 'dump_' . $name . '_division.json';
         if (file_exists($json_filename)) {
             $result = $this->read($json_filename);
@@ -176,11 +176,11 @@ class DumpAction extends Action
     }
 
     /**
-     * @param FileQuery $query
+     * @param Query $query
      * @param string[] $divisions
      * @return array
      */
-    private function divisionsWithId(FileQuery $query, $divisions)
+    private function divisionsWithId(Query $query, $divisions)
     {
         $result = [];
         $this->stdout("translate division to division_id:\n", Console::FG_GREEN);

@@ -8,8 +8,11 @@
 
 namespace larryli\ipv4\yii2;
 
+use larryli\ipv4\Query;
 use Yii;
 use yii\base\Component;
+use yii\base\ExitException;
+use yii\db\Connection;
 
 /**
  * Class IPv4
@@ -18,47 +21,42 @@ use yii\base\Component;
 class IPv4 extends Component
 {
     /**
-     * object names
-     *
-     * @var string[]
-     */
-    static public $classNames = [
-        'monipdb' => 'MonIPDBQuery',
-        'qqwry' => 'QQWryQuery',
-        'full' => 'FullQuery',
-        'mini' => 'MiniQuery',
-        'china' => 'ChinaQuery',
-        'world' => 'WorldQuery',
-        'freeipip' => 'FreeIPIPQuery',
-        'taobao' => 'TaobaoQuery',
-        'sina' => 'SinaQuery',
-        'baidumap' => 'BaiduMapQuery',
-    ];
-    /**
      * @var string table prefix
      */
     public $prefix = 'ipv4_';
     /**
-     * @var string runtime path
+     * @var \yii\db\Connection
      */
-    public $runtime = '';
+    public $db;
     /**
      * @var string larryli\ipv4\query\Database class
      */
-    public $database = '';
+    public $database;
     /**
      * @var array
      */
     public $providers = [
-        'monipdb',
-        'qqwry',
-        'full' => ['monipdb', 'qqwry'],
-        'mini' => 'full',
-        'china' => 'full',
-        'world' => 'full',
+        'monipdb' => [
+            'filename' => '@runtime/17monipdb.dat',
+        ],
+        'qqwry' => [
+            'filename' => '@runtime/qqwry.dat',
+        ],
+        'full' => [
+            'providers' => ['monipdb', 'qqwry'],
+        ],
+        'mini' => [
+            'providers' => 'full',
+        ],
+        'china' => [
+            'providers' => 'full',
+        ],
+        'world' => [
+            'providers' => 'full',
+        ],
     ];
     /**
-     * @var array
+     * @var \larryli\ipv4\Query[]
      */
     protected $objects = [];
 
@@ -67,91 +65,109 @@ class IPv4 extends Component
      */
     public function init()
     {
+        $this->initDatabase();
+        $this->initProviders();
+    }
+
+    /**
+     * @throws ExitException
+     * @throws \yii\base\InvalidConfigException
+     */
+    protected function initDatabase()
+    {
+        if (empty($this->db)) {
+            $this->db = Yii::$app->db;
+        } else if (is_string($this->db)) {
+            $this->db = Yii::$app->get($this->db);
+        }
+        if (!is_a($this->db, Connection::className())) {
+            throw new ExitException(500, "{$this->db} is not a db connection object", 500);
+        }
+        if (empty($this->database)) {
+            $this->database = Database::className();
+        }
+        if (is_string($this->database)) {
+            $this->database = new $this->database([
+                'db' => $this->db,
+                'prefix' => $this->prefix,
+            ]);
+        }
+        if (!Database::is_a($this->database)) {
+            throw new ExitException(500, "{$this->database} is not a ipv4 database object", 500);
+        }
+    }
+
+    /**
+     *
+     */
+    protected function initProviders()
+    {
         $result = [];
-        foreach ($this->providers as $name => $provider) {
+        foreach ($this->providers as $name => $options) {
             if (is_integer($name)) {
-                $name = $provider;
-                $provider = '';
+                $name = $options;
+                $options = [];
             }
-            $result[$name] = $provider;
+            $result[$name] = $options;
         }
         $this->providers = $result;
-        foreach ($this->providers as $name => $provider) {
-            $options = null;
-            switch ($name) {
-                case 'monipdb':
-                case 'qqwry':
-                    $options = $this->getFileOptions($name);
-                    break;
-                case 'full':
-                case 'mini':
-                case 'china':
-                case 'world':
-                    $options = $this->getDatabaseOptions();
-                    break;
+        foreach ($this->providers as $name => $options) {
+            $providers = [];
+            if (is_array($options)) {
+                $opt = null;
+                if (isset($options['providers'])) {
+                    if (is_array($options['providers'])) {
+                        $providers = $options['providers'];
+                    } else {
+                        $providers[] = $options['providers'];
+                    }
+                    unset($options['providers']);
+                    $opt = $this->database;
+                }
+                if (isset($options['filename'])) {
+                    $opt = Yii::getAlias($options['filename']);
+                    unset($options['filename']);
+                }
+                if (isset($options['class']) && !empty($opt)) {
+                    $options['options'] = $opt;
+                } else {
+                    $options = $opt;
+                }
             }
-            $this->createQuery($name, $options);
+            $this->createQuery($name, $options, $providers);
         }
     }
 
     /**
      * @param string $name
      * @param mixed $options
-     * @return mixed
+     * @param array $providers
+     * @return Query|null
      * @throws \Exception
      */
-    public function createQuery($name, $options = null)
+    public function createQuery($name, $options, array $providers = [])
     {
-        if (!isset($this->objects[$name])) {
-            if (isset(self::$classNames[$name])) {
-                $class = "\\larryli\\ipv4\\" . self::$classNames[$name];
-            } else if (is_array($options) && isset($options['class'])) {
-                $class = $options['class'];
-                $options = $options['options'];
-            } else {
-                throw new \Exception("Unknown Query name \"{$name}\"");
-            }
-            $this->objects[$name] = new $class($options);
+        $query = $this->getQuery($name);
+        if ($query == null) {
+            $query = Query::create($name, $options);
+            $query->setProviders(array_map(function ($provider) {
+                return $this->getQuery($provider);
+            }, $providers));
+            $this->objects[$name] = $query;
         }
-        return $this->objects[$name];
+        return $query;
     }
 
     /**
      * @param $name
-     * @return bool|null|string
+     * @return Query|null
      */
-    private function getFileOptions($name)
+    public function getQuery($name)
     {
-        $options = null;
-        if (!empty($this->runtime)) {
-            $options = Yii::getAlias($this->runtime);
-            switch ($name) {
-                case 'monipdb':
-                    $options .= '/17monipdb.dat';
-                    break;
-                case 'qqwry':
-                    $options .= '/qqwry.dat';
-                    break;
-            }
+        if (isset($this->objects[$name])) {
+            return $this->objects[$name];
         }
-        return $options;
-    }
-
-    /**
-     * @return array|null
-     */
-    private function getDatabaseOptions()
-    {
-        $options = null;
-        if (!empty($this->database)) {
-            $options = new $this->database(['prefix' => $this->prefix]);
-        } else if (!empty($this->runtime)) {
-            $options = [
-                'database_type' => 'sqlite',
-                'database_file' => Yii::getAlias($this->runtime) . '/ipv4.sqlite',
-            ];
-        }
-        return $options;
+        return null;
     }
 
     /**
@@ -169,7 +185,7 @@ class IPv4 extends Component
      */
     public function __get($name)
     {
-        if (array_key_exists($name, $this->objects)) {
+        if (isset($this->objects[$name])) {
             return $this->objects[$name];
         }
         return parent::__get($name);
@@ -182,10 +198,9 @@ class IPv4 extends Component
      */
     public function __isset($name)
     {
-        if (array_key_exists($name, $this->objects)) {
+        if (isset($this->objects[$name])) {
             return true;
         }
-        return parent::__get($name);
+        return parent::__isset($name);
     }
-
 }

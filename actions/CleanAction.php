@@ -8,6 +8,8 @@
 namespace larryli\ipv4\yii2\actions;
 
 use larryli\ipv4\DatabaseQuery;
+use larryli\ipv4\FileQuery;
+use larryli\ipv4\Query;
 use Yii;
 use yii\helpers\Console;
 
@@ -30,25 +32,25 @@ class CleanAction extends Action
         $this->stdout("clean {$type}:\n", Console::FG_GREEN);
         switch ($type) {
             case 'all':
-                foreach ($this->ipv4->providers as $name => $provider) {
-                    if (!empty($provider)) {
+                foreach ($this->ipv4->getQueries() as $name => $query) {
+                    if (DatabaseQuery::is_a($query)) {
                         $cleanDivision = true;
                     }
-                    $this->clean($name);
+                    $this->clean($query, $name);
                 }
                 break;
             case 'file':
-                foreach ($this->ipv4->providers as $name => $provider) {
-                    if (empty($provider)) {
-                        $this->clean($name);
+                foreach ($this->ipv4->getQueries() as $name => $query) {
+                    if (FileQuery::is_a($query)) {
+                        $this->clean($query, $name);
                     }
                 }
                 break;
             case 'database':
-                foreach ($this->ipv4->providers as $name => $provider) {
-                    if (!empty($provider)) {
+                foreach ($this->ipv4->getQueries() as $name => $query) {
+                    if (DatabaseQuery::is_a($query)) {
                         $cleanDivision = true;
-                        $this->clean($name);
+                        $this->clean($query, $name);
                     }
                 }
                 break;
@@ -62,13 +64,13 @@ class CleanAction extends Action
     }
 
     /**
+     * @param Query $query
      * @param string $name
      * @throws \Exception
      */
-    private function clean($name)
+    private function clean(Query $query, $name)
     {
         $this->stdout("clean {$name}:", Console::FG_GREEN);
-        $query = $this->ipv4->createQuery($name);
         $query->clean();
         $this->stdout(" completed!\n", Console::FG_GREEN);
     }

@@ -7,6 +7,7 @@
 
 namespace larryli\ipv4\yii2\actions;
 
+use larryli\ipv4\Query;
 use Yii;
 use yii\helpers\Console;
 
@@ -28,19 +29,19 @@ class QueryAction extends Action
         $this->stdout('query ', Console::FG_GREEN);
         $this->stdout("{$ip}\n", Console::FG_YELLOW);
         $ip = ip2long($ip);
-        foreach ($this->ipv4->providers as $name => $provider) {
-            $this->query($name, $ip);
+        foreach ($this->ipv4->getQueries() as $name => $query) {
+            $this->query($query, $name, $ip);
         }
     }
 
     /**
+     * @param Query $query
      * @param string $name
      * @param integer $ip
      * @throws \Exception
      */
-    private function query($name, $ip)
+    private function query(Query $query, $name, $ip)
     {
-        $query = $this->ipv4->createQuery($name);
         $address = $query->find($ip);
         $this->stdout("\t{$name}: ", Console::FG_YELLOW);
         $this->stdout("{$address}\n");

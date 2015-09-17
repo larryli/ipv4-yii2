@@ -7,6 +7,9 @@
 
 namespace larryli\ipv4\yii2\actions;
 
+use larryli\ipv4\DatabaseQuery;
+use larryli\ipv4\FileQuery;
+use larryli\ipv4\Query;
 use Yii;
 use yii\helpers\Console;
 
@@ -39,21 +42,21 @@ class BenchmarkAction extends Action
         $this->stdout("\t{$times} times\n", Console::FG_YELLOW);
         switch ($type) {
             case 'all':
-                foreach ($this->ipv4->providers as $name => $provider) {
-                    $this->benchmark($name, $times);
+                foreach ($this->ipv4->getQueries() as $name => $query) {
+                    $this->benchmark($query, $name, $times);
                 }
                 break;
             case 'file':
-                foreach ($this->ipv4->providers as $name => $provider) {
-                    if (empty($provider)) {
-                        $this->benchmark($name, $times);
+                foreach ($this->ipv4->getQueries() as $name => $query) {
+                    if (FileQuery::is_a($query)) {
+                        $this->benchmark($query, $name, $times);
                     }
                 }
                 break;
             case 'database':
-                foreach ($this->ipv4->providers as $name => $provider) {
-                    if (!empty($provider)) {
-                        $this->benchmark($name, $times);
+                foreach ($this->ipv4->getQueries() as $name => $query) {
+                    if (DatabaseQuery::is_a($query)) {
+                        $this->benchmark($query, $name, $times);
                     }
                 }
                 break;
@@ -64,18 +67,21 @@ class BenchmarkAction extends Action
     }
 
     /**
+     * @param Query $query
      * @param string $name
      * @param integer $times
      * @throws \Exception
      */
-    private function benchmark($name, $times)
+    private function benchmark(Query $query, $name, $times)
     {
-        $query = $this->ipv4->createQuery($name);
+        $step = intval(4000000000 / $times);
+        if ($step < 1) {
+            $step = 1;
+        }
         if (count($query) > 0) {
-            $this->stdout("\t benchmark {$name}: \t", Console::FG_GREEN);
+            $this->stdout("\t" . "benchmark {$name}: \t", Console::FG_GREEN);
             $start = microtime(true);
-            for ($i = 0; $i < $times; $i++) {
-                $ip = mt_rand(0, 4294967295);
+            for ($ip = 0, $i = 0; $i < $times; $ip += $step, $i++) {
                 $query->find($ip);
             }
             $time = microtime(true) - $start;

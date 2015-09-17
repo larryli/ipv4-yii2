@@ -8,6 +8,7 @@
 namespace larryli\ipv4\yii2\actions;
 
 use larryli\ipv4\DatabaseQuery;
+use larryli\ipv4\Query;
 use Yii;
 use yii\helpers\Console;
 
@@ -29,26 +30,25 @@ class InitAction extends Action
     {
         $force = $this->controller->force;
         $this->stdout("initialize ip database:\n", Console::FG_GREEN);
-        foreach ($this->ipv4->providers as $name => $provider) {
-            if (empty($provider)) {
-                $this->download($name, $force);
+        foreach ($this->ipv4->getQueries() as $name => $query) {
+            if (empty($query->getProviders())) {
+                $this->download($query, $name, $force);
             } else {
                 $this->division();
-                $this->generate($name, $force, $provider);
+                $this->generate($query, $name, $force);
             }
         }
     }
 
     /**
+     * @param Query $query
      * @param string $name
      * @param bool $force
      * @return void
      * @throws \Exception
      */
-    protected function download($name, $force)
+    protected function download(Query $query, $name, $force)
     {
-        $query = $this->ipv4->createQuery($name);
-        $name = $query->name();
         if (!$force && $query->exists()) {
             $this->stdout("use exist {$name} file or api.\n", Console::FG_YELLOW);
         } else {
@@ -115,27 +115,15 @@ class InitAction extends Action
     }
 
     /**
+     * @param Query $query
      * @param string $name
      * @param bool $force
-     * @param string|array $provider
      * @return void
      * @throws \Exception
      */
-    protected function generate($name, $force, $provider)
+    protected function generate(Query $query, $name, $force)
     {
-        $query = $this->ipv4->createQuery($name);
-        if (is_string($provider)) {
-            $provider = $this->ipv4->createQuery($provider);
-            $use = $provider->name();
-            $provider_extra = null;
-        } else if (is_array($provider)) {
-            $provider_extra = $this->ipv4->createQuery($provider[1]);
-            $provider = $this->ipv4->createQuery($provider[0]);
-            $use = $provider->name() . ' and ' . $provider_extra->name();
-        } else {
-            throw new \Exception("Error generate options {$provider}");
-        }
-        $name = $query->name();
+        $use = implode(', ', $query->getProviders());
         if (!$force && count($query) > 0) {
             $this->stdout("use exist {$name} table.\n", Console::FG_YELLOW);
         } else {
@@ -155,7 +143,7 @@ class InitAction extends Action
                         Console::endProgress();
                         break;
                 }
-            }, $provider, $provider_extra);
+            });
             $this->stdout(" completed!\n", Console::FG_GREEN);
         }
     }
