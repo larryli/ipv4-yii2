@@ -77,7 +77,7 @@ Yii::setAlias('@ipv4-yii2', dirname(__DIR__) . '/vendor/larryli/ipv4-yii2');
 * ```providers``` 配置可用的 ```\larryli\ipv4\Query``` 数据源；
     * ```class``` 数据源可以指定具体的类；
     * ```filename``` ，对于 ```\larryli\ipv4\FileQuery``` 需指定文件路径，其内容可以用别名，如 ```@runtime/foo.dat```；
-    * ```providers``` 数据源的数据源，```\larryli\ipv4\DatabaseQuery``` 需要，可以为一个或两个；
+    * ```providers``` 数据源的数据源，```\larryli\ipv4\DatabaseQuery``` 需要，可以为一个或多个；其中第一个为主数据源，其他是备选，按照定义顺序依次选用；
 
 ### 命令
 
@@ -202,7 +202,7 @@ use larryli\ipv4\yii2\models\Index;
  * @property string $ip
  * @property Division $division
  */
-abstract class Full extends Index
+class Full extends Index
 {
     /**
      * @return string
