@@ -103,7 +103,7 @@ Yii::setAlias('@ipv4-yii2', dirname(__DIR__) . '/vendor/larryli/ipv4-yii2');
 复制数据库迁移脚本到当前 ```@app/migrations``` 下：
 
 ```shell
-cp vendor/larryli/ipv4/src/yii2/migrations/*.php migrations/
+cp vendor/larryli/ipv4-yii2/migrations/*.php migrations/
 ```
 
 或者参见[此页面的说明](https://github.com/yiisoft/yii2/issues/384)使用其他的方式处理。
