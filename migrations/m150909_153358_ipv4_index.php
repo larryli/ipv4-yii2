@@ -1,7 +1,6 @@
 <?php
 
 use yii\BaseYii as Yii;
-use yii\db\Schema;
 use yii\db\Migration;
 
 /**
@@ -14,6 +13,11 @@ class m150909_153358_ipv4_index extends Migration
      */
     public function up()
     {
+        $tableOptions = null;
+        if ($this->db->driverName === 'mysql') {
+            // http://stackoverflow.com/questions/766809/whats-the-difference-between-utf8-general-ci-and-utf8-unicode-ci
+            $tableOptions = 'CHARACTER SET utf8 COLLATE utf8_unicode_ci ENGINE=InnoDB';
+        }
         /**
          * @var $ipv4 \larryli\ipv4\yii2\IPv4
          */
@@ -22,9 +26,9 @@ class m150909_153358_ipv4_index extends Migration
             if (!empty($provider)) {
                 $table = $this->tableName($name);
                 $this->createTable($table, [
-                    'id' => Schema::TYPE_BIGPK,
-                    'division_id' => Schema::TYPE_INTEGER,
-                ]);
+                    'id' => $this->bigPrimaryKey(),
+                    'division_id' => $this->integer(),
+                ], $tableOptions);
             }
         }
     }
