@@ -31,7 +31,8 @@ class InitAction extends Action
         $force = $this->controller->force;
         $this->stdout("initialize ip database:\n", Console::FG_GREEN);
         foreach ($this->ipv4->getQueries() as $name => $query) {
-            if (empty($query->getProviders())) {
+            $providers = $query->getProviders();
+            if (empty($providers)) {
                 $this->download($query, $name, $force);
             } else {
                 $this->division();
