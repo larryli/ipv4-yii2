@@ -18,7 +18,7 @@ class m150909_153358_ipv4_index extends Migration
         if ($this->db->driverName === 'mysql') {
             // http://stackoverflow.com/questions/766809/whats-the-difference-between-utf8-general-ci-and-utf8-unicode-ci
             $tableOptions = 'CHARACTER SET utf8 COLLATE utf8_unicode_ci ENGINE=InnoDB';
-        } else if ($this->db->driverName === 'sqlite') {
+        } elseif ($this->db->driverName === 'sqlite') {
             // https://github.com/yiisoft/yii2/commit/af75262541e83f353a36baf888b3392c9d34f201#commitcomment-17395513
             $idType = $this->primaryKey();
         }

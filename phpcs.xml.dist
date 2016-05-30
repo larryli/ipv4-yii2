@@ -1,0 +1,14 @@
+<?xml version="1.0"?>
+<ruleset name="IPv4 Yii2 Component Standard">
+    <description>IPv4 Yii2 component coding standard</description>
+
+    <exclude-pattern>/vendor/*</exclude-pattern>
+
+    <rule ref="vendor/yiisoft/yii2-coding-standards/Yii2"/>
+    <rule ref="PSR1.Classes.ClassDeclaration.MissingNamespace">
+        <exclude-pattern>/migrations/*</exclude-pattern>
+    </rule>
+    <rule ref="Squiz.Classes.ValidClassName.NotCamelCaps">
+        <exclude-pattern>/migrations/*</exclude-pattern>
+    </rule>
+</ruleset>

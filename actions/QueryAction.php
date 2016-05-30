@@ -46,5 +46,4 @@ class QueryAction extends Action
         $this->stdout("\t{$name}: ", Console::FG_YELLOW);
         $this->stdout("{$address}\n");
     }
-
 }

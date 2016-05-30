@@ -32,6 +32,10 @@ class Ipv4Controller extends Controller
      */
     public $force = 0;
     /**
+     * @var bool Do not show progress
+     */
+    public $noProgress = 0;
+    /**
      * @var int number of times
      */
     public $times = 100000;
@@ -54,6 +58,7 @@ class Ipv4Controller extends Controller
             case 'init':
                 $options = [
                     'force',
+                    'noProgress',
                 ];
                 break;
             case 'benchmark':

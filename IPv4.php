@@ -77,7 +77,7 @@ class IPv4 extends Component
     {
         if (empty($this->db)) {
             $this->db = Yii::$app->db;
-        } else if (is_string($this->db)) {
+        } elseif (is_string($this->db)) {
             $this->db = Yii::$app->get($this->db);
         }
         if (!is_a($this->db, Connection::className())) {

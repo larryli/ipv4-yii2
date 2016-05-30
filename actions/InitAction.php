@@ -67,8 +67,9 @@ class InitAction extends Action
      */
     protected function createStreamContext()
     {
-        $ctx = stream_context_create([], [
-            'notification' => function ($code, $severity, $message, $message_code, $bytesTransferred, $bytesMax) {
+        $params = [];
+        if (empty($this->controller->noProgress)) {
+            $params['notification'] = function ($code, $severity, $message, $message_code, $bytesTransferred, $bytesMax) {
                 switch ($code) {
                     case STREAM_NOTIFY_FILE_SIZE_IS:
                         Console::startProgress(0, $bytesMax);
@@ -85,8 +86,9 @@ class InitAction extends Action
                         Console::endProgress();
                         break;
                 }
-            }
-        ]);
+            };
+        }
+        $ctx = stream_context_create([], $params);
         return $ctx;
     }
 
@@ -100,15 +102,21 @@ class InitAction extends Action
             switch ($code) {
                 case 0:
                     $this->stdout("generate divisions table:\n", Console::FG_GREEN);
-                    Console::startProgress(0, $n);
+                    if (empty($this->controller->noProgress)) {
+                        Console::startProgress(0, $n);
+                    }
                     $total = $n;
                     break;
                 case 1:
-                    Console::updateProgress($n, $total);
+                    if (empty($this->controller->noProgress)) {
+                        Console::updateProgress($n, $total);
+                    }
                     break;
                 case 2:
-                    Console::updateProgress($total, $total);
-                    Console::endProgress();
+                    if (empty($this->controller->noProgress)) {
+                        Console::updateProgress($total, $total);
+                        Console::endProgress();
+                    }
                     $this->stdout(" completed!\n", Console::FG_GREEN);
                     break;
             }
@@ -129,22 +137,26 @@ class InitAction extends Action
             $this->stdout("use exist {$name} table.\n", Console::FG_YELLOW);
         } else {
             $this->stdout("generate {$name} table with {$use}:\n", Console::FG_GREEN);
-            $query->init(function ($code, $n) {
-                static $total = 0;
-                switch ($code) {
-                    case 0:
-                        Console::startProgress(0, $n);
-                        $total = $n;
-                        break;
-                    case 1:
-                        Console::updateProgress($n, $total);
-                        break;
-                    case 2:
-                        Console::updateProgress($total, $total);
-                        Console::endProgress();
-                        break;
-                }
-            });
+            if (empty($this->controller->noProgress)) {
+                $query->init(function ($code, $n) {
+                    static $total = 0;
+                    switch ($code) {
+                        case 0:
+                            Console::startProgress(0, $n);
+                            $total = $n;
+                            break;
+                        case 1:
+                            Console::updateProgress($n, $total);
+                            break;
+                        case 2:
+                            Console::updateProgress($total, $total);
+                            Console::endProgress();
+                            break;
+                    }
+                });
+            } else {
+                $query->init();
+            }
             $this->stdout(" completed!\n", Console::FG_GREEN);
         }
     }

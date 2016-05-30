@@ -31,7 +31,7 @@ abstract class Index extends ActiveRecord
      * @param integer $ip
      * @return null|Index
      */
-    static public function findOneByIp($ip)
+    public static function findOneByIp($ip)
     {
         return static::find()
             ->where(['>=', 'id', $ip])
@@ -83,7 +83,7 @@ abstract class Index extends ActiveRecord
     /**
      * @return string
      */
-    static public function divisionClassName()
+    public static function divisionClassName()
     {
         return Division::className();
     }
