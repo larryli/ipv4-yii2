@@ -126,7 +126,7 @@ class Database extends BaseDatabase
             $rows[] = array_values($row);
         }
         if (isset($columns)) {
-            $this->db->transaction(function(Connection $db) use ($table, $columns, $rows) {
+            $this->db->transaction(function (Connection $db) use ($table, $columns, $rows) {
                 $db->createCommand()->batchInsert($this->getTableName($table), $columns, $rows)->execute();
             });
         }
