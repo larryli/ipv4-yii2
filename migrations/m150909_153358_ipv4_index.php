@@ -1,6 +1,5 @@
 <?php
 
-use yii\BaseYii as Yii;
 use yii\db\Migration;
 
 /**
@@ -25,7 +24,7 @@ class m150909_153358_ipv4_index extends Migration
         /**
          * @var $ipv4 \larryli\ipv4\yii2\IPv4
          */
-        $ipv4 = Yii::$app->get('ipv4');
+        $ipv4 = \Yii::$app->get('ipv4');
         foreach ($ipv4->providers as $name => $provider) {
             if (!empty($provider['providers'])) {
                 $table = $this->tableName($name);
@@ -45,7 +44,7 @@ class m150909_153358_ipv4_index extends Migration
         /**
          * @var $ipv4 \larryli\ipv4\yii2\IPv4
          */
-        $ipv4 = Yii::$app->get('ipv4');
+        $ipv4 = \Yii::$app->get('ipv4');
         foreach ($ipv4->providers as $name => $provider) {
             if (!empty($provider['providers'])) {
                 $this->dropTable($this->tableName($name));
@@ -63,7 +62,7 @@ class m150909_153358_ipv4_index extends Migration
         /**
          * @var $ipv4 \larryli\ipv4\yii2\IPv4
          */
-        $ipv4 = Yii::$app->get('ipv4');
+        $ipv4 = \Yii::$app->get('ipv4');
         return $ipv4->prefix . $name;
     }
 }

@@ -1,6 +1,5 @@
 <?php
 
-use yii\BaseYii as Yii;
 use yii\db\Migration;
 
 /**
@@ -47,7 +46,7 @@ class m150909_153352_ipv4_division extends Migration
         /**
          * @var $ipv4 \larryli\ipv4\yii2\IPv4
          */
-        $ipv4 = Yii::$app->get('ipv4');
+        $ipv4 = \Yii::$app->get('ipv4');
         return $ipv4->prefix . 'divisions';
     }
 }
